@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
+	"strconv"
 	"time"
 )
 
@@ -17,6 +18,8 @@ var watchingFolders string
 var timeBetweenConverting string
 var keepOriginals string
 var keepLivePhoto string
+var userId string
+var groupId string
 
 func main() {
 	ReadEnv()
@@ -49,25 +52,11 @@ func Run(folder string) {
 	}
 }
 
-// func ConvertFolder(folder string) error {
-// 	//files, _ := ioutil.ReadDir(folder)
-
-// 	filepath.WalkDir(folder, Convert)
-
-// 	return nil
-// }
-
 func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) error {
 	if d.IsDir() {
 		return nil
 	}
 	newFileName := fmt.Sprintf("%s.jpg", srcFileName)
-
-	// fmt.Printf("CurrentFile: %s\n", filepath.Join(path, d.Name()))
-	// fmt.Printf("NewFile    : %s\n\n", filepath.Join(path, newFileName))
-
-	// fmt.Printf("splitPath  : %v\n", currentFolder)
-	// fmt.Printf("cmdDir     : %s\n", path)
 
 	cmd := exec.Command("convert")
 	cmd.Dir = path
@@ -81,6 +70,10 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 		fmt.Printf("ERROR: %v\n", cerr)
 		return cerr
 	}
+
+	go io.Chown(newFileName, strconv.Atoi(userId),  strconv.Atoi(groupId))
+	log.Prinff("Updated the UID=%s and GUID=%s \n", userId, groupId)
+
 	log.Printf("successful converting of [%s  ->  %s]\n", d.Name(), newFileName)
 	return nil
 }
@@ -90,6 +83,8 @@ func ReadEnv() {
 	timeBetweenConverting = os.Getenv("TIME_BETWEEN")
 	keepOriginals = os.Getenv("KEEP_ORIGINAL")
 	keepLivePhoto = os.Getenv("KEEP_LIVE_PHOTO")
+	userId = os.Getenv("SET_UID")
+	groupId = os.Getenv("SET_GID")
 
 	if watchingFolders == "" {
 		log.Fatalf("no folders to watch specified. set the WATCH environment variable. quit programm")
@@ -108,6 +103,14 @@ func ReadEnv() {
 	if keepLivePhoto == "" {
 		keepLivePhoto = "false"
 		log.Printf("KEEP_LIVE_PHOTO not specified. setting default to false")
+	}
+	if userId == "" {
+		userId = "-1"
+		log.Printf("SET_UID not specified. setting default to 'no change'")
+	}
+	if groupId == "" {
+		groupId = "-1"
+		log.Printf("SET_GID not specified. setting default to 'no change'")
 	}
 }
 
