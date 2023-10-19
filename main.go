@@ -18,8 +18,7 @@ var watchingFolders string
 var timeBetweenConverting string
 var keepOriginals string
 var keepLivePhoto string
-var userId string
-var groupId string
+var username string
 
 func main() {
 	ReadEnv()
@@ -71,8 +70,22 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 		return cerr
 	}
 
-	go io.Chown(newFileName, strconv.Atoi(userId),  strconv.Atoi(groupId))
-	log.Prinff("Updated the UID=%s and GUID=%s \n", userId, groupId)
+	// Get the userid and groupid from the username
+	var uid, gid int
+	uname, err := user.Lookup(username)
+	if err != nil {
+		uname, _ := user.Lookup("nobody")
+		uid, _ = strconv.Atoi(uname.Uid)
+		gid, _ = strconv.Atoi(uname.Gid)
+	} else {
+		uid, _ = strconv.Atoi(uname.Uid)
+		gid, err = getGroupId(element.Group)
+		if err != nil {
+			gid, _ = getGroupId("nogroup")
+		}
+	}
+	go io.Chown(newFileName, uid,  gid)
+	log.Prinff("Updated the UID=%s and GUID=%s \n", uid, gid)
 
 	log.Printf("successful converting of [%s  ->  %s]\n", d.Name(), newFileName)
 	return nil
@@ -83,8 +96,7 @@ func ReadEnv() {
 	timeBetweenConverting = os.Getenv("TIME_BETWEEN")
 	keepOriginals = os.Getenv("KEEP_ORIGINAL")
 	keepLivePhoto = os.Getenv("KEEP_LIVE_PHOTO")
-	userId = os.Getenv("SET_UID")
-	groupId = os.Getenv("SET_GID")
+	username = os.Getenv("USERNAME")
 
 	if watchingFolders == "" {
 		log.Fatalf("no folders to watch specified. set the WATCH environment variable. quit programm")
