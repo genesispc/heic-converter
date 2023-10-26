@@ -74,14 +74,13 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 	var uid, gid int
 	uname, err := user.Lookup(username)
 	if err != nil {
-		uname, _ := user.Lookup("nobody")
-		uid, _ = strconv.Atoi(uname.Uid)
-		gid, _ = strconv.Atoi(uname.Gid)
+		uid, _ = strconv.Atoi(-1)
+		gid, _ = strconv.Atoi(-1)
 	} else {
 		uid, _ = strconv.Atoi(uname.Uid)
-		gid, err = getGroupId(element.Group)
+		gid, err = strconv.Atoi(uname.Gid)
 		if err != nil {
-			gid, _ = getGroupId("nogroup")
+			gid, _ = getGroupId(-1)
 		}
 	}
 	go io.Chown(newFileName, uid,  gid)
