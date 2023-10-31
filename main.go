@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path"
 	"path/filepath"
 	"strings"
@@ -74,18 +75,22 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 	var uid, gid int
 	uname, err := user.Lookup(username)
 	if err != nil {
-		uid, _ = strconv.Atoi(-1)
-		gid, _ = strconv.Atoi(-1)
+		uid = -1
+		gid = -1
 	} else {
 		uid, _ = strconv.Atoi(uname.Uid)
 		gid, err = strconv.Atoi(uname.Gid)
 		if err != nil {
-			gid, _ = getGroupId(-1)
+			gid =  -1
 		}
 	}
-	go io.Chown(newFileName, uid,  gid)
-	log.Prinff("Updated the UID=%s and GUID=%s \n", uid, gid)
-
+	newFile := fmt.Sprintf("%s/%s.jpg", path, srcFileName)
+	if err := os.Chown(newFile, uid,  gid); err != nil {
+		log.Printf("Error: %s \n", err)
+	} else {
+		log.Printf("Updated %s: UID=%v, GUID=%v \n", newFile, uid, gid)
+	}
+	
 	log.Printf("successful converting of [%s  ->  %s]\n", d.Name(), newFileName)
 	return nil
 }
@@ -108,20 +113,15 @@ func ReadEnv() {
 	}
 	log.Printf("start converting every: %s", timeBetweenConverting)
 	if keepOriginals == "" {
-		keepOriginals = "false"
-		log.Printf("KEEP_ORIGNAL not specified. setting default to false")
+		keepOriginals = "true"
+		log.Printf("KEEP_ORIGNAL not specified. setting default to true")
 	}
 	if keepLivePhoto == "" {
-		keepLivePhoto = "false"
-		log.Printf("KEEP_LIVE_PHOTO not specified. setting default to false")
+		keepLivePhoto = "true"
+		log.Printf("KEEP_LIVE_PHOTO not specified. setting default to true")
 	}
-	if userId == "" {
-		userId = "-1"
-		log.Printf("SET_UID not specified. setting default to 'no change'")
-	}
-	if groupId == "" {
-		groupId = "-1"
-		log.Printf("SET_GID not specified. setting default to 'no change'")
+	if username == "" {
+		log.Printf("USERNAME not specified. setting default to 'no change'")
 	}
 }
 
