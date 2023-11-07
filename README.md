@@ -1,18 +1,22 @@
 # heic-converter
 
-this programm will watch a given folder (and subfolders) and convert every .heic / .HEIC files into a .jpg file
+This program will watch a given folder (and subfolders) and convert every .heic / .HEIC files into the .jpg file.
 
-it runs on a ticker, that will restart the converting process every 1 hour (configurable)
-by default, it will also delete the source-files and live-photos
+It runs on a ticker, that will restart the converting process every 1 hour (by default).
 
-this is supposed to be executed on a synology nas, that backups pictures from an iPhone (with Synology Photos / Synology Drive).
+By default it will keep the original source-files and live-photos.
+
+If required the UID and GID of the generated file is updated (referenced by the USERNAME environment variable).
+Note: Future aim to get the values from the original heic file and apply it to the jpg file.
+
+Caution: Currently has issue with needing passwd file to be overwritten.
+
+The app is this is supposed to be executed on a synology nas, with backups from an iPhone (with Synology Photos)
+
+Note: Synology Drive can automatically convert heic to jpg! I'm not sure why synology does not include this feature for hte photos app.
 
 # installation
+Further details to come.
 
-![](01_docker-heic-converter.png)
-![](02_docker-heic-converter.png)
-![](03_docker-heic-converter.png)
-![](04_docker-heic-converter.png)
-![](05_docker-heic-converter.png)
-![](06_docker-heic-converter.png)
-![](07_docker-heic-converter.png)
+Published as a self contained docker image here: 
+https://hub.docker.com/repository/docker/genesispc/heic-converter/general
