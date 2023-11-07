@@ -67,7 +67,7 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 	go io.Copy(os.Stdout, stdOut)
 	cerr = cmd.Run()
 	if cerr != nil {
-		fmt.Printf("ERROR: %v\n", cerr)
+		log.Printf("ERROR: %v\n", cerr)
 		return cerr
 	}
 
@@ -75,12 +75,14 @@ func ConvertHeic(path string, srcFileName string, d fs.DirEntry, err error) erro
 	var uid, gid int
 	uname, err := user.Lookup(username)
 	if err != nil {
+		log.Printf("Error: %s \n", err)
 		uid = -1
 		gid = -1
 	} else {
 		uid, _ = strconv.Atoi(uname.Uid)
 		gid, err = strconv.Atoi(uname.Gid)
 		if err != nil {
+			log.Printf("Error: %s \n", err)
 			gid =  -1
 		}
 	}
